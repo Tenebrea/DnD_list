@@ -5,16 +5,19 @@ import tkinter.simpledialog as sd
 import json
 import sqlite3
 
+from Get_params import Settings as s
 
-db_path = "Details.db"
 
-class CharacterSheetApp(ctk.CTk):
+
+class CharacterSheetApp(ctk.CTk, s):
     def __init__(self):
         super().__init__()
+        set = s()
         self.title("D&D 2024 Character Sheet")
         self.geometry("800x700")
+        self.configure(fg_color = set.fg_color) 
 
-        self.db_connection = sqlite3.connect(db_path)
+        self.db_connection = sqlite3.connect(set.db_path)
         self.cursor = self.db_connection.cursor()
 
         self.character_data = {}
@@ -125,20 +128,15 @@ class CharacterSheetApp(ctk.CTk):
             return
         spell_list = ctk.CTkToplevel()
         spell_list.title("Список заклинаний")
-        spell_list.geometry("300x400")
-        spell_listbox = ctk.CTkTextbox(spell_list, height=300)
-        spell_listbox.pack(pady=10)
-        spell_list.scrollbar = ctk.CTkScrollbar(self, command=self.textbox.yview)
-        spell_list.scrollbar.grid(row=0, column=1)
-        for spell in self.spell_names:
-            spell_listbox.insert("end", f"{spell}\n")
-
-
-        spell = sd.askstring("Добавить заклинание", f"Введите название (пример: {self.spell_names[0]})")
-        if spell in self.spell_names:
-            self.spell_listbox.insert("end", f"{spell}\n")
-        elif spell:
-            mb.showwarning("Не найдено", "Такого заклинания нет в базе.")
+        spell_list.geometry("600x600")
+        scrollable_frame = ctk.CTkScrollableFrame(spell_list, 980, 580)
+        scrollable_frame.pack(pady = 10, padx = 10)
+        
+        for spell in range(len(self.spell_names)-1):
+            b = ctk.CTkButton(scrollable_frame, 40, 20, text = self.spell_names[spell], command=lambda num = spell: self.spell_listbox.insert("end", f"{self.spell_names[num]}\n"))
+            b.pack(pady = 10, padx = 10)
+            l = ctk.CTkLabel(scrollable_frame, width = 10, text = self.spell_descs[spell], wraplength = 400)
+            l.pack(fill = "both", pady = 10, padx = 10, expand = True)
 
     def remove_last_spell(self):
         content = self.spell_listbox.get("0.0", "end").strip().split("\n")
@@ -146,6 +144,8 @@ class CharacterSheetApp(ctk.CTk):
             self.spell_listbox.delete("0.0", "end")
             for line in content[:-1]:
                 self.spell_listbox.insert("end", f"{line}\n")
+    
+
 
 
 app = CharacterSheetApp()
