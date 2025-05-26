@@ -4,6 +4,8 @@ import tkinter.messagebox as mb
 import tkinter.simpledialog as sd
 import json
 import sqlite3
+import re
+from random import *
 
 from Get_params import Settings as s
 
@@ -145,6 +147,43 @@ class CharacterSheetApp(ctk.CTk, s):
             for line in content[:-1]:
                 self.spell_listbox.insert("end", f"{line}\n")
     
+    def dice_roll(self, roll):
+        result = 0
+        start = 0
+        end = 0
+        roll = roll.replace(" ", "")
+        for i in roll:
+            match i:
+                case "+":
+                    if re.match(r"[0-9]d[0-9]", roll[start: end-1]):
+                        result += randint(roll[start], roll[end-1])
+                        start = end+1
+                    else:
+                        result = "error"
+                        break
+                case "-":
+                    if re.match(r"[0-9]d[0-9]", roll[start: end-1]):
+                        result -= randint(roll[start], roll[end-1])
+                        start = end+1
+                    else:
+                        result = "error"
+                        break
+                case "*":
+                    if re.match(r"[0-9]d[0-9]", roll[start: end-1]):
+                        result *= randint(roll[start], roll[end-1])
+                        start = end+1
+                    else:
+                        result = "error"
+                        break
+                case "/":
+                    if re.match(r"[0-9]d[0-9]", roll[start: end-1]):
+                        result //= randint(roll[start], roll[end-1])
+                        start = end+1
+                    else:
+                        result = "error"
+                        break
+            end+=1
+        return result
 
 
 
