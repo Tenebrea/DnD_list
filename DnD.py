@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import tkinter.filedialog as fd
 import tkinter.messagebox as mb
+import tkinter.simpledialog as sd
 import json
 import sqlite3
 
@@ -13,14 +14,11 @@ class CharacterSheetApp(ctk.CTk):
         self.title("D&D 2024 Character Sheet")
         self.geometry("800x700")
 
-        # Подключение к БД
         self.db_connection = sqlite3.connect(db_path)
         self.cursor = self.db_connection.cursor()
 
-        # Переменные
         self.character_data = {}
 
-        # Интерфейс
         self.name_entry = ctk.CTkEntry(self, placeholder_text="Имя персонажа")
         self.name_entry.pack(pady=5)
 
@@ -62,21 +60,17 @@ class CharacterSheetApp(ctk.CTk):
             self.stat_entries[stat] = entry
 
     def load_reference_data(self):
-        # Загрузка рас
         self.cursor.execute("SELECT Name FROM Race")
         races = [row[0] for row in self.cursor.fetchall()]
         self.race_option.configure(values=races or ["Нет данных"])
 
-        # Загрузка классов
         self.cursor.execute("SELECT Name FROM Class")
         classes = [row[0] for row in self.cursor.fetchall()]
         self.class_option.configure(values=classes or ["Нет данных"])
-
-        # Загрузка заклинаний
+        
         self.cursor.execute("SELECT Name FROM Spells")
         self.spell_names = [row[0] for row in self.cursor.fetchall()]
-        
-        #Описание заклинаний
+
         self.cursor.execute("SELECT Description FROM Spells")
         self.spell_descs = [row[0] for row in self.cursor.fetchall()]
 
@@ -134,10 +128,12 @@ class CharacterSheetApp(ctk.CTk):
         spell_list.geometry("300x400")
         spell_listbox = ctk.CTkTextbox(spell_list, height=300)
         spell_listbox.pack(pady=10)
+        spell_list.scrollbar = ctk.CTkScrollbar(self, command=self.textbox.yview)
+        spell_list.scrollbar.grid(row=0, column=1)
         for spell in self.spell_names:
             spell_listbox.insert("end", f"{spell}\n")
-        # Покажем простое окно выбора
-        import tkinter.simpledialog as sd
+
+
         spell = sd.askstring("Добавить заклинание", f"Введите название (пример: {self.spell_names[0]})")
         if spell in self.spell_names:
             self.spell_listbox.insert("end", f"{spell}\n")
