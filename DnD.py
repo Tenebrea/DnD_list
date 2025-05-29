@@ -24,36 +24,42 @@ class CharacterSheetApp(ctk.CTk, s):
 
         self.character_data = {}
 
-        self.name_entry = ctk.CTkEntry(self, placeholder_text="Имя персонажа")
+        self.name_entry = ctk.CTkEntry(self, placeholder_text="Имя персонажа", text_color = set.font_color, fg_color = set.ent_color, placeholder_text_color = set.font_color)
         self.name_entry.pack(pady=5)
 
-        self.level_entry = ctk.CTkEntry(self, placeholder_text="Уровень")
+        self.level_entry = ctk.CTkEntry(self, placeholder_text="Уровень", text_color = set.font_color, fg_color = set.ent_color, placeholder_text_color = set.font_color)
         self.level_entry.pack(pady=5)
 
-        self.race_option = ctk.CTkOptionMenu(self, values=["Загрузка..."])
+        self.race_option = ctk.CTkOptionMenu(self, values=["Загрузка..."], text_color = set.font_color, fg_color = set.btn_color)
         self.race_option.pack(pady=5)
 
-        self.class_option = ctk.CTkOptionMenu(self, values=["Загрузка..."])
+        self.class_option = ctk.CTkOptionMenu(self, values=["Загрузка..."], text_color = set.font_color, fg_color = set.btn_color)
         self.class_option.pack(pady=5)
 
         self.stat_entries = {}
         self.create_stats_section()
 
-        ctk.CTkLabel(self, text="Заклинания").pack(pady=5)
-        self.spell_listbox = ctk.CTkTextbox(self, height=100)
+        ctk.CTkLabel(self, text="Заклинания", text_color = set.font_color).pack(pady=5)
+        self.spell_listbox = ctk.CTkTextbox(self, height=100, text_color = set.font_color, fg_color = set.ent_color)
         self.spell_listbox.pack(pady=5)
 
-        self.add_spell_button = ctk.CTkButton(self, text="Добавить заклинание", command=self.add_spell)
+        self.add_spell_button = ctk.CTkButton(self, text="Добавить заклинание", command=self.add_spell, text_color = set.font_color, fg_color = set.btn_color)
         self.add_spell_button.pack(pady=3)
 
-        self.remove_spell_button = ctk.CTkButton(self, text="Удалить последнее заклинание", command=self.remove_last_spell)
+        self.remove_spell_button = ctk.CTkButton(self, text="Удалить последнее заклинание", command=self.remove_last_spell, text_color = set.font_color, fg_color = set.btn_color)
         self.remove_spell_button.pack(pady=3)
 
-        self.load_button = ctk.CTkButton(self, text="Загрузить персонажа", command=self.load_character)
+        self.load_button = ctk.CTkButton(self, text="Загрузить персонажа", command=self.load_character, text_color = set.font_color, fg_color = set.btn_color)
         self.load_button.pack(pady=10)
 
-        self.save_button = ctk.CTkButton(self, text="Сохранить персонажа", command=self.save_character)
+        self.save_button = ctk.CTkButton(self, text="Сохранить персонажа", command=self.save_character, text_color = set.font_color, fg_color = set.btn_color)
         self.save_button.pack(pady=10)
+
+        self.roll_label = ctk.CTkLabel(self, text_color = set.font_color)
+        self.roll_label.pack(pady = 10)
+
+        self.roll_button = ctk.CTkButton(self, text = "Бросить куб", command = self.dice_roll)
+        self.roll_button.pack(pady = 10)
 
         self.load_reference_data()
 
@@ -147,7 +153,8 @@ class CharacterSheetApp(ctk.CTk, s):
             for line in content[:-1]:
                 self.spell_listbox.insert("end", f"{line}\n")
     
-    def dice_roll(self, roll):
+    def dice_roll(self):
+        roll = "1d6"
         result = 0
         start = 0
         end = 0
@@ -182,8 +189,18 @@ class CharacterSheetApp(ctk.CTk, s):
                     else:
                         result = "error"
                         break
+                case _:
+                    result = roll[start:end-1]
+                    if re.match(r"[0-9]d[0-9]", roll[start: end]):
+                        result += randint(roll[start], roll[end-1])
+                        result += roll[start:end-1]
+                        start = end+1
+                    else:
+                        result = "error"
+                        start = end+1
+
             end+=1
-        return result
+        self.roll_label.configure(text = result)
 
 
 
