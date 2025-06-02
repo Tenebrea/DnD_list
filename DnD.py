@@ -60,6 +60,9 @@ class CharacterSheetApp(ctk.CTk, s):
 
         self.roll_button = ctk.CTkButton(self, text = "Бросить куб", command = self.dice_roll)
         self.roll_button.pack(pady = 10)
+        
+        self.roll_entry = ctk.CTkEntry(self, placeholder_text="Введите выражение для броска", text_color = set.font_color, fg_color = set.ent_color, placeholder_text_color = set.font_color)
+        self.roll_entry.pack(pady=10)
 
         self.load_reference_data()
 
@@ -153,53 +156,59 @@ class CharacterSheetApp(ctk.CTk, s):
             for line in content[:-1]:
                 self.spell_listbox.insert("end", f"{line}\n")
     
-    def dice_roll(self):
-        roll = "1d6"
-        result = 0
-        start = 0
-        end = 0
+    def dice_roll(self, result = 0, start = 1):
+        roll = self.roll_entry.get()
+
         roll = roll.replace(" ", "")
-        for i in roll:
+        a1 = re.split(r"[+\-/*]", roll)
+        a2 = re.findall(r"[+\-*/]", roll)
+        
+        if re.match(r"[0-9]+?d[0-9]+?", a1[0]):
+            for i in range(int(a1[0].split("d")[0])):
+                result+=randint(1, int(a1[0].split("d")[1]))
+        elif re.match(r"[0-9]+?", a1[0]):
+            result+=int(a1[0])
+        else:
+            result = "error"
+
+        for i in a2:
             match i:
                 case "+":
-                    if re.match(r"[0-9]d[0-9]", roll[start: end-1]):
-                        result += randint(roll[start], roll[end-1])
-                        start = end+1
+                    if re.match(r"[0-9]+?d[0-9]+?", a1[start]):
+                        for _ in range(int(a1[start].split("d")[0])):
+                            result+=randint(1, int(a1[start].split("d")[1]))
+                    elif re.match(r"[0-9]+?", a1[start]):
+                        result+=int(a1[start])
                     else:
                         result = "error"
-                        break
-                case "-":
-                    if re.match(r"[0-9]d[0-9]", roll[start: end-1]):
-                        result -= randint(roll[start], roll[end-1])
-                        start = end+1
-                    else:
-                        result = "error"
-                        break
-                case "*":
-                    if re.match(r"[0-9]d[0-9]", roll[start: end-1]):
-                        result *= randint(roll[start], roll[end-1])
-                        start = end+1
-                    else:
-                        result = "error"
-                        break
-                case "/":
-                    if re.match(r"[0-9]d[0-9]", roll[start: end-1]):
-                        result //= randint(roll[start], roll[end-1])
-                        start = end+1
-                    else:
-                        result = "error"
-                        break
-                case _:
-                    result = roll[start:end-1]
-                    if re.match(r"[0-9]d[0-9]", roll[start: end]):
-                        result += randint(roll[start], roll[end-1])
-                        result += roll[start:end-1]
-                        start = end+1
-                    else:
-                        result = "error"
-                        start = end+1
 
-            end+=1
+                case "-":
+                    if re.match(r"[0-9]+?d[0-9]+?", a1[start]):
+                        for _ in range(int(a1[start].split("d")[0])):
+                            result-=randint(1, int(a1[start].split("d")[1]))
+                    elif re.match(r"[0-9]+?", a1[start]):
+                        result-=int(a1[start])
+                    else:
+                        result = "error"
+
+                case "/":
+                    if re.match(r"[0-9]+?d[0-9]+?", i):
+                        for _ in range(int(a1[start].split("d")[0])):
+                            result//=randint(1, int(a1[start].split("d")[1]))
+                    elif re.match(r"[0-9]+?", a1[start]):
+                        result//=int(a1[start])
+                    else:
+                        result = "error"
+
+                case "*":
+                    if re.match(r"[0-9]+?d[0-9]+?", i):
+                        for _ in range(int(a1[start].split("d")[0])):
+                            result*=randint(1, int(a1[start].split("d")[1]))
+                    elif re.match(r"[0-9]+?", a1[start]):
+                        result*=int(a1[start])
+                    else:
+                        result = "error"
+            start += 1
         self.roll_label.configure(text = result)
 
 
