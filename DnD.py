@@ -48,6 +48,17 @@ class CharacterSheetApp(ctk.CTk, s):
         ctk.CTkLabel(self, text="Заклинания", text_color=set.font_color).place(x = 230, y = 50)
         self.spell_listbox = ctk.CTkTextbox(self, height=100, text_color=set.font_color, fg_color=set.ent_color)
         self.spell_listbox.place(x = 170, y = 80)
+        
+        ctk.CTkLabel(self, text="Снаряжение", text_color=set.font_color).place(x = 530, y = 50)
+        self.equipment_listbox = ctk.CTkTextbox(self, height=100, text_color=set.font_color, fg_color=set.ent_color)
+        self.equipment_listbox.place(x = 470, y = 80)
+        
+        ctk.CTkLabel(self, text="Черты", text_color=set.font_color).place(x = 540, y = 190)
+        self.feature_listbox = ctk.CTkTextbox(self, height=100, text_color=set.font_color, fg_color=set.ent_color)
+        self.feature_listbox.place(x = 470, y = 220)
+        
+        self.feature_update_button = ctk.CTkButton(self, text="Обновить черты", command=self.feature_update,
+                                             text_color=set.font_color, fg_color=set.btn_color)
 
         self.add_spell_button = ctk.CTkButton(self, text="Добавить заклинание", command=self.add_spell,
                                               text_color=set.font_color, fg_color=set.btn_color)
@@ -67,15 +78,15 @@ class CharacterSheetApp(ctk.CTk, s):
         self.save_button.place(x = 190, y = 280)
 
         self.roll_label = ctk.CTkLabel(self, text_color=set.font_color, text = "")
-        self.roll_label.place(x = 450, y = 310)
+        self.roll_label.place(x = 340, y = 310)
 
         self.roll_button = ctk.CTkButton(self, text="Бросить куб", command=self.dice_roll, text_color=set.font_color,
                                          fg_color=set.btn_color)
-        self.roll_button.place(x = 300, y = 340)
+        self.roll_button.place(x = 190, y = 340)
 
         self.roll_entry = ctk.CTkEntry(self, placeholder_text="Введите выражение для броска", text_color=set.font_color,
                                        fg_color=set.ent_color, placeholder_text_color=set.font_color)
-        self.roll_entry.place(x = 300, y = 310)
+        self.roll_entry.place(x = 190, y = 310)
 
         self.load_reference_data()
 
@@ -102,6 +113,8 @@ class CharacterSheetApp(ctk.CTk, s):
 
         self.cursor.execute("SELECT Description FROM Spells")
         self.spell_descs = [row[0] for row in self.cursor.fetchall()]
+        
+       
 
     def load_character(self):
         file_path = fd.askopenfilename(filetypes=[("JSON файлы", "*.json")])
@@ -126,6 +139,14 @@ class CharacterSheetApp(ctk.CTk, s):
         self.spell_listbox.delete("0.0", "end")
         for spell in self.character_data.get("spells", []):
             self.spell_listbox.insert("end", f"{spell}\n")
+            
+        self.equipment_listbox.delete("0.0", "end")
+        for item in self.character_data.get("equipment", []):
+            self.equipment_listbox.insert("end", f"{item}\n")
+            
+        self.feature_listbox.delete("0.0", "end")
+        for feature in self.character_data.get("feature", []):
+            self.feature_listbox.insert("end", f"{feature}\n")
 
     def save_character(self):
         try:
@@ -139,6 +160,12 @@ class CharacterSheetApp(ctk.CTk, s):
 
             spells = self.spell_listbox.get("0.0", "end").strip().split("\n")
             self.character_data["spells"] = [s for s in spells if s.strip()]
+            
+            equipment = self.equipment_listbox.get("0.0", "end").strip().split("\n")
+            self.character_data["equipment"] = [e for e in equipment if e.strip()]
+            
+            features = self.feature_listbox.get("0.0", "end").strip().split("\n")
+            self.character_data["feature"] = [f for f in features if f.strip()]
 
             file_path = fd.asksaveasfilename(defaultextension=".json", filetypes=[("JSON файлы", "*.json")])
             if file_path:
@@ -154,15 +181,16 @@ class CharacterSheetApp(ctk.CTk, s):
             return
         spell_list = ctk.CTkToplevel()
         spell_list.title("Список заклинаний")
+        spell_list.configure(fg_color=set.fg_color)
         spell_list.geometry("600x600")
-        scrollable_frame = ctk.CTkScrollableFrame(spell_list, 980, 580)
-        scrollable_frame.pack(pady=10, padx=10)
+        scrollable_frame = ctk.CTkScrollableFrame(spell_list, 980, 580, fg_color=set.ent_color)
+        scrollable_frame.pack()
 
         for spell in range(len(self.spell_names) - 1):
-            b = ctk.CTkButton(scrollable_frame, 40, 20, text=self.spell_names[spell],
+            b = ctk.CTkButton(scrollable_frame, 40, 20, text=self.spell_names[spell], fg_color=set.btn_color, text_color=set.font_color,
                               command=lambda num=spell: self.spell_listbox.insert("end", f"{self.spell_names[num]}\n"))
             b.pack(pady=10, padx=10)
-            l = ctk.CTkLabel(scrollable_frame, width=10, text=self.spell_descs[spell], wraplength=400)
+            l = ctk.CTkLabel(scrollable_frame, width=10, text=self.spell_descs[spell], wraplength=400, text_color=set.font_color)
             l.pack(fill="both", pady=10, padx=10, expand=True)
 
     def remove_last_spell(self):
@@ -236,6 +264,7 @@ class CharacterSheetApp(ctk.CTk, s):
                         return
             start += 1
         self.roll_label.configure(text=result)
+
 
 
 app = CharacterSheetApp()
